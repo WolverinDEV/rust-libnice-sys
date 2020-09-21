@@ -24,17 +24,10 @@ fn main() {
 
                 let output_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("libnice");
                 if !output_path.join("lib").join("nice.lib").exists() && !output_path.join("lib").join("libnice.a").exists() {
-                    panic!("BUILD!");
                     build_meson(&std::env::current_dir().unwrap().join("libnice"), &output_path, false);
                 }
 
-                for library in [
-                    "ffi",
-                    "nice",
-                    "z"
-                ].iter() {
-                    println!("cargo:rustc-link-lib=static={}", library);
-                }
+                println!("cargo:rustc-link-lib=static=nice");
                 println!("cargo:rustc-link-search=native={}", output_path.join("lib").to_string_lossy());
 
                 libnice_include_dirs.push(output_path.join("include").to_string_lossy().into());
