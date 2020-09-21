@@ -19,26 +19,10 @@ type gint = c_int;
 type guchar = c_uchar;
 type gchar = c_char;
 
-/* for windows only */
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct sockaddr_in {
-    __data: [u8; 4]
-}
+#[cfg(target_os = "windows")]
+mod windows;
 
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct sockaddr_in6 {
-    __data: [u8; 4]
-}
-
-#[repr(C)]
-pub union sockaddr_storage {
-    v4: sockaddr_in6,
-    v6: sockaddr_in6
-}
-type socklen_t = u32;
-type SSIZE_T = i64;
-/* end for windows only */
+#[cfg(target_os = "windows")]
+use windows::*;
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
