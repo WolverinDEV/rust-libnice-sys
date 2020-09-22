@@ -103,6 +103,7 @@ fn build_meson(source: &PathBuf, output_path: &PathBuf, configs_promoted: bool) 
         compile.arg(&output_path);
         compile.arg("--default-library");
         compile.arg("shared");
+        compile.arg("-Dgstreamer=disabled");
         compile.arg(&build_path);
         compile.arg(&source);
         compile.stdout(Stdio::piped());
