@@ -4,7 +4,6 @@ extern crate pkg_config;
 use std::env;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
-use std::io::{BufReader, BufRead};
 
 fn main() {
     let mut libnice_include_dirs: Vec<String> = Vec::new();
@@ -20,15 +19,22 @@ fn main() {
             },
             Err(error) => {
                 println!("Pkg-config hasn't found libnice: {}.", error);
-                println!("Building it!");
+                if ! cfg!(windows) {
+                    panic!("Please install it!");
+                } else {
+                    println!("Building it!");
+                }
 
                 let output_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("libnice");
                 if !output_path.join("lib").join("nice.lib").exists() && !output_path.join("lib").join("libnice.a").exists() {
                     build_meson(&std::env::current_dir().unwrap().join("libnice"), &output_path, false);
                 }
 
-                println!("cargo:rustc-link-lib=static=nice");
+                println!("cargo:rustc-link-lib=dylib=nice");
+                println!("cargo:rustc-link-lib=dylib=bcrypt");
+                println!("cargo:rustc-link-lib=dylib=Iphlpapi");
                 println!("cargo:rustc-link-search=native={}", output_path.join("lib").to_string_lossy());
+                println!("cargo:rustc-link-search=native={}", output_path.join("bin").to_string_lossy()); /* to set the PATH environment variable later */
 
                 libnice_include_dirs.push(output_path.join("include").to_string_lossy().into());
                 libnice_include_dirs.push(output_path.join("include").join("glib-2.0").to_string_lossy().into());
@@ -91,14 +97,17 @@ fn build_meson(source: &PathBuf, output_path: &PathBuf, configs_promoted: bool) 
     /* setup the build */
     {
         let mut compile = Command::new("meson");
+
         compile.arg("setup");
         compile.arg("--prefix");
         compile.arg(&output_path);
+        compile.arg("--default-library");
+        compile.arg("shared");
         compile.arg(&build_path);
         compile.arg(&source);
         compile.stdout(Stdio::piped());
 
-        let mut result = compile.spawn().expect("failed to launch meson command")
+        let result = compile.spawn().expect("failed to launch meson command")
             .wait_with_output().expect("failed to wait for the process");
 
         if ! result.status.success() {
@@ -108,7 +117,7 @@ fn build_meson(source: &PathBuf, output_path: &PathBuf, configs_promoted: bool) 
             println!("{}", &stdout);
             if stdout.find("ERROR: Unknown compiler(s):").is_some() {
                 panic!("Missing any c compiler. If you're under windows,\
-                    ensure the MSVC compiler is within the PATH environment variable.");
+                    ensure the compiler is within the PATH environment variable.");
             } else if stdout.find("meson wrap promote subprojects").is_some() && !configs_promoted {
                 let glib_subprojects = PathBuf::from("subprojects").join("glib-2.64.2").join("subprojects");
                 for file in [

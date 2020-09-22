@@ -8,9 +8,6 @@ description = "Rust FFI bindings to libnice, automatically generated with bindge
 license = "LGPL-2.1 OR MPL-1.1"
 repository = "https://github.com/johni0702/rust-libnice-sys"
 
-[lib]
-crate-type = ["dylib"]
-
 [dependencies]
 gio-sys = "0.9"
 gobject-sys = "0.9"
