@@ -37,6 +37,7 @@ fn main() {
             }
     }
 
+    /*
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     if !out_path.join("bindings.rs").exists() {
         let bindings = bindgen::Builder::default()
@@ -83,6 +84,7 @@ fn main() {
             .write_to_file(out_path.join("bindings.rs"))
             .expect("Couldn't write bindings!");
     }
+    */
 }
 
 fn build_meson(source: &PathBuf, output_path: &PathBuf, configs_promoted: bool) {
