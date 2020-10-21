@@ -19,11 +19,6 @@ fn main() {
             },
             Err(error) => {
                 println!("Pkg-config hasn't found libnice: {}.", error);
-                if ! cfg!(windows) {
-                    panic!("Please install it!");
-                } else {
-                    println!("Building it!");
-                }
 
                 let output_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("libnice");
                 if !output_path.join("lib").join("nice.lib").exists() && !output_path.join("lib").join("libnice.a").exists() {
