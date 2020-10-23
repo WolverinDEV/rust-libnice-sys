@@ -112,8 +112,13 @@ fn build_meson(source: &PathBuf, output_path: &PathBuf, configs_promoted: bool) 
         compile.arg("setup");
         compile.arg("--prefix");
         compile.arg(&output_path);
-        compile.arg("--default-library");
-        compile.arg("static");
+        let value = env::var("nice_build_type").unwrap_or(String::new());
+        match value.as_str() {
+            "static" => { command.arg("-Ddefault_library=static"); },
+            "shared" => { command.arg("-Ddefault_library=shared"); },
+            "" => {  },
+            _ => panic!("Invalid build type: {:?}", value)
+        };
         compile.arg("-Dgstreamer=disabled");
         compile.arg("-Dtests=disabled");
         compile.arg(&build_path);
