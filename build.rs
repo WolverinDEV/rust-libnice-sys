@@ -22,7 +22,7 @@ fn main() {
 
                 let output_path = if cfg!(windows) {
                     /* Causes this issue: https://github.com/mesonbuild/meson/issues/7879 */
-                    std::env::current_dir().unwrap().join("libnice__build")
+                    std::env::current_dir().unwrap().join("__build")
                 } else {
                     PathBuf::from(env::var("OUT_DIR").unwrap()).join("libnice")
                 };
