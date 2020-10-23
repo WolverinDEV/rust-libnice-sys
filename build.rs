@@ -114,8 +114,8 @@ fn build_meson(source: &PathBuf, output_path: &PathBuf, configs_promoted: bool) 
         compile.arg(&output_path);
         let value = env::var("nice_build_type").unwrap_or(String::new());
         match value.as_str() {
-            "static" => { command.arg("-Ddefault_library=static"); },
-            "shared" => { command.arg("-Ddefault_library=shared"); },
+            "static" => { compile.arg("-Ddefault_library=static"); },
+            "shared" => { compile.arg("-Ddefault_library=shared"); },
             "" => {  },
             _ => panic!("Invalid build type: {:?}", value)
         };
