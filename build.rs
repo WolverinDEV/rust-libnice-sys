@@ -20,13 +20,7 @@ fn main() {
             Err(error) => {
                 println!("Pkg-config hasn't found libnice: {}.", error);
 
-                let output_path = if cfg!(windows) {
-                    /* Causes this issue: https://github.com/mesonbuild/meson/issues/7879 */
-                    std::env::current_dir().unwrap().join("__build")
-                } else {
-                    PathBuf::from(env::var("OUT_DIR").unwrap()).join("libnice")
-                };
-
+                let output_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("libnice");
                 if !output_path.join("lib").join("nice.lib").exists() && !output_path.join("lib").join("libnice.a").exists() {
                     build_meson(&std::env::current_dir().unwrap().join("libnice"), &output_path, false);
                 }
@@ -102,7 +96,13 @@ fn main() {
 }
 
 fn build_meson(source: &PathBuf, output_path: &PathBuf, configs_promoted: bool) {
-    let build_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("libnice_build");
+    let output_path = if cfg!(windows) {
+        /* Causes this issue: https://github.com/mesonbuild/meson/issues/7879 */
+        std::env::current_dir().unwrap().join("__build")
+    } else {
+        PathBuf::from(env::var("OUT_DIR").unwrap()).join("libnice_build")
+    };
+
     println!("Building to {}", build_path.to_str().unwrap());
 
     /* setup the build */
