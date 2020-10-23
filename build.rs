@@ -29,7 +29,7 @@ fn main() {
                 if cfg!(windows) {
                     println!("cargo:rustc-link-lib=dylib=bcrypt");
                     println!("cargo:rustc-link-lib=dylib=Iphlpapi");
-                    println!("cargo:rustc-link-search=native={}", output_path.join("bin").to_string_lossy());
+                    println!("cargo:rustc-link-search=native={}", output_path.join("lib").to_string_lossy());
                 } else {
                     let triplet = Command::new("gcc")
                         .arg("-dumpmachine")
