@@ -101,7 +101,7 @@ fn build_meson(source: &PathBuf, output_path: &PathBuf, configs_promoted: bool) 
         compile.arg("--default-library");
         compile.arg("static");
         compile.arg("-Dgstreamer=disabled");
-	compile.arg("-Dtests=disabled");
+        compile.arg("-Dtests=disabled");
         compile.arg(&build_path);
         compile.arg(&source);
         compile.stdout(Stdio::piped());
