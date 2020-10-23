@@ -96,7 +96,7 @@ fn main() {
 }
 
 fn build_meson(source: &PathBuf, output_path: &PathBuf, configs_promoted: bool) {
-    let output_path = if cfg!(windows) {
+    let build_path = if cfg!(windows) {
         /* Causes this issue: https://github.com/mesonbuild/meson/issues/7879 */
         std::env::current_dir().unwrap().join("__build")
     } else {
