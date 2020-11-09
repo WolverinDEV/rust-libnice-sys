@@ -41,107 +41,91 @@ impl BuildStep for MesonPromote {
 }
 
 fn main() {
-    let mut libnice_include_dirs: Vec<String> = Vec::new();
+    let source = BuildSourceGit::builder("https://github.com/WolverinDEV/libnice.git".to_owned())
+        .build();
 
-    match pkg_config::Config::new()
-        .atleast_version("0.1.0")
-        .probe("nice") {
-            Ok(libnice) => {
-                println!("Found libnice via pkg-config (Version: {})", libnice.version);
-                for path in libnice.include_paths {
-                    libnice_include_dirs.push(String::from(path.to_str().expect("invalid path")));
-                }
-            },
-            Err(error) => {
-                println!("Pkg-config hasn't found libnice: {}.", error);
+    let meson = MesonBuild::builder()
+        .promote_callback(|source| {
+            println!("Callback promote for {:?}", source);
+            vec![
+                "subprojects/glib-2.64.2/subprojects/zlib.wrap".to_owned(),
+                "subprojects/glib-2.64.2/subprojects/libffi.wrap".to_owned(),
+                "subprojects/glib-2.64.2/subprojects/proxy-libintl.wrap".to_owned()
+            ]
+        })
+        .meson_option("gstreamer", "disabled")
+        .meson_option("tests", "disabled")
+        .build();
 
-                let source = BuildSourceGit::builder("https://github.com/WolverinDEV/libnice.git".to_owned())
-                    .build();
+    let mut build_builder = Build::builder()
+        .name("libnice")
+        .source(Box::new(source))
+        .add_step(Box::new(meson))
+        .remove_build_dir(false);
 
-                let meson = MesonBuild::builder()
-                    .promote_callback(|source| {
-                        println!("Callback promote for {:?}", source);
-                        vec![
-                            "subprojects/glib-2.64.2/subprojects/zlib.wrap".to_owned(),
-                            "subprojects/glib-2.64.2/subprojects/libffi.wrap".to_owned(),
-                            "subprojects/glib-2.64.2/subprojects/proxy-libintl.wrap".to_owned()
-                        ]
-                    })
-                    .meson_option("gstreamer", "disabled")
-                    .meson_option("tests", "disabled")
-                    .build();
-
-                let mut build_builder = Build::builder()
-                    .name("libnice")
-                    .source(Box::new(source))
-                    .add_step(Box::new(meson))
-                    .remove_build_dir(false);
-
-                match build_builder.build().expect("failed to generate build").execute() {
-                    Ok(mut result) => {
-                        if cfg!(windows) {
-                            /* required by libnice */
-                            println!("cargo:rustc-link-lib=dylib=bcrypt");
-                            println!("cargo:rustc-link-lib=dylib=Iphlpapi");
-                        }
-
-                        result.emit_cargo();
-
-                        /* TODO: Generate bindings */
-                        /*
-                         let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-                            if !out_path.join("bindings.rs").exists() {
-                                let bindings = bindgen::Builder::default()
-                                    .header_contents(
-                                        "wrapper.h",
-                                        "#include <nice/agent.h>
-                                     #include <nice/interfaces.h>
-
-                                     #include <stun/stunagent.h>
-                                     #include <stun/stunmessage.h>
-                                     #include <stun/constants.h>
-                                     #include <stun/usages/bind.h>
-                                     #include <stun/usages/ice.h>
-                                     #include <stun/usages/turn.h>
-                                     #include <stun/usages/timer.h>
-
-                                     #include <nice/pseudotcp.h>",
-                                    )
-                                    // ICE Library
-                                    .whitelist_function("nice_.+")
-                                    .whitelist_type("NICE.+")
-                                    .whitelist_type("_?Nice.+")
-                                    .whitelist_type("_?TurnServer")
-                                    // STUN Library
-                                    .whitelist_function("stun_.+")
-                                    .whitelist_type("STUN.+")
-                                    .whitelist_type("TURN.+")
-                                    .whitelist_type("_?[Ss]tun.+")
-                                    // contains `va_list` type argument which seems like it might not be handled properly
-                                    .opaque_type("StunDebugHandler")
-                                    // Pseudo TCP Socket implementation
-                                    .whitelist_function("pseudo_tcp_.+")
-                                    .whitelist_type("_?PseudoTcp.+")
-                                    // Disable recursive whitelisting, we're using libc, glib-sys, etc.
-                                    .whitelist_recursively(false)
-                                    .clang_args(
-                                        libnice_include_dirs
-                                            .iter()
-                                            .map(|path| format!("-I{}", path)),
-                                    )
-                                    .generate()
-                                    .expect("Unable to generate bindings");
-                                bindings
-                                    .write_to_file(out_path.join("bindings.rs"))
-                                    .expect("Couldn't write bindings!");
-                            }
-                          */
-                    },
-                    Err(error) => {
-                        println!("{}", error.pretty_format());
-                        panic!("failed to execute libnice build");
-                    }
-                }
+    match build_builder.build().expect("failed to generate build").execute() {
+        Ok(mut result) => {
+            if cfg!(windows) {
+                /* required by libnice */
+                println!("cargo:rustc-link-lib=dylib=bcrypt");
+                println!("cargo:rustc-link-lib=dylib=Iphlpapi");
             }
+
+            result.emit_cargo();
+
+            /* TODO: Generate bindings */
+            /*
+             let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+                if !out_path.join("bindings.rs").exists() {
+                    let bindings = bindgen::Builder::default()
+                        .header_contents(
+                            "wrapper.h",
+                            "#include <nice/agent.h>
+                         #include <nice/interfaces.h>
+
+                         #include <stun/stunagent.h>
+                         #include <stun/stunmessage.h>
+                         #include <stun/constants.h>
+                         #include <stun/usages/bind.h>
+                         #include <stun/usages/ice.h>
+                         #include <stun/usages/turn.h>
+                         #include <stun/usages/timer.h>
+
+                         #include <nice/pseudotcp.h>",
+                        )
+                        // ICE Library
+                        .whitelist_function("nice_.+")
+                        .whitelist_type("NICE.+")
+                        .whitelist_type("_?Nice.+")
+                        .whitelist_type("_?TurnServer")
+                        // STUN Library
+                        .whitelist_function("stun_.+")
+                        .whitelist_type("STUN.+")
+                        .whitelist_type("TURN.+")
+                        .whitelist_type("_?[Ss]tun.+")
+                        // contains `va_list` type argument which seems like it might not be handled properly
+                        .opaque_type("StunDebugHandler")
+                        // Pseudo TCP Socket implementation
+                        .whitelist_function("pseudo_tcp_.+")
+                        .whitelist_type("_?PseudoTcp.+")
+                        // Disable recursive whitelisting, we're using libc, glib-sys, etc.
+                        .whitelist_recursively(false)
+                        .clang_args(
+                            libnice_include_dirs
+                                .iter()
+                                .map(|path| format!("-I{}", path)),
+                        )
+                        .generate()
+                        .expect("Unable to generate bindings");
+                    bindings
+                        .write_to_file(out_path.join("bindings.rs"))
+                        .expect("Couldn't write bindings!");
+                }
+              */
+        },
+        Err(error) => {
+            println!("{}", error.pretty_format());
+            panic!("failed to execute libnice build");
+        }
     }
 }
