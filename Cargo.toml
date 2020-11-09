@@ -17,3 +17,4 @@ libc = "0.2"
 [build-dependencies]
 bindgen = "0.53"
 pkg-config = "0.3"
+build-utils = { git = "https://github.com/WolverinDEV/build-utils.git" }
