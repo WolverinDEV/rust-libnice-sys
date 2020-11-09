@@ -75,8 +75,6 @@ fn main() {
                     .name("libnice")
                     .source(Box::new(source))
                     .add_step(Box::new(meson))
-                    .build_path(base_url.clone())
-                    .install_prefix(base_url.join("install_root_nice"))
                     .remove_build_dir(false);
 
                 match build_builder.build().expect("failed to generate build").execute() {
