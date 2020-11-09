@@ -55,6 +55,7 @@ fn main() {
         })
         .meson_option("gstreamer", "disabled")
         .meson_option("tests", "disabled")
+        .meson_option("crypto-library", "openssl")
         .build();
 
     let mut build_builder = Build::builder()
