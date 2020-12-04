@@ -8,6 +8,7 @@ use build_utils::build::{LibraryType, BuildStepError, MesonBuild};
 use build_utils::source::BuildSourceGit;
 use build_utils::{BuildStep, BuildResult, Build, execute_build_command};
 use std::hash::{Hasher, Hash};
+use build_utils::resolve_env_var;
 
 struct MesonPromote {
     files: Vec<String>
@@ -41,6 +42,7 @@ impl BuildStep for MesonPromote {
 }
 
 fn main() {
+    let build_name = "libnice";
     let source = BuildSourceGit::builder("https://github.com/WolverinDEV/libnice.git".to_owned())
         .build();
 
@@ -56,10 +58,11 @@ fn main() {
         .meson_option("gstreamer", "disabled")
         .meson_option("tests", "disabled")
         .meson_option("crypto-library", "openssl")
+        .meson_option("gupnp", resolve_env_var!(build_name, "gupnp").unwrap_or("auto".to_owned()))
         .build();
 
     let mut build_builder = Build::builder()
-        .name("libnice")
+        .name(build_name)
         .source(Box::new(source))
         .add_step(Box::new(meson))
         .remove_build_dir(false);
