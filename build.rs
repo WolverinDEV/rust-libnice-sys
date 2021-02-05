@@ -44,7 +44,7 @@ impl BuildStep for MesonPromote {
 fn main() {
     let build_name = "libnice";
     let source = BuildSourceGit::builder("https://github.com/WolverinDEV/libnice.git".to_owned())
-        .revision(Some("1ed31040a5efc893e3107c4cd556c10b45c82e43".to_owned()))
+        .revision(Some("5dff8876ca93adeadc1381895dba6536bdc21b0c".to_owned()))
         .build();
 
     let meson = MesonBuild::builder()
