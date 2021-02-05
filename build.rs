@@ -58,6 +58,7 @@ fn main() {
         })
         .meson_option("gstreamer", "disabled")
         .meson_option("tests", "disabled")
+        .meson_option("examples", "disabled")
         .meson_option("crypto-library", "openssl")
         .meson_option("gupnp", resolve_env_var!(build_name, "gupnp").unwrap_or("auto".to_owned()))
         .build();
